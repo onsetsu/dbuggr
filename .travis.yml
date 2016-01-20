@@ -24,9 +24,9 @@ before_install:
 # - './generateWrappedZ3.sh'
 
 script:
-- case "$RUN" in
--   tests) 'npm test'
--   lint) 'gulp lint'
+- case $RUN in
+-   tests) npm test
+-   lint) gulp lint
 
 #after_success: 'npm run benchmark'
 
