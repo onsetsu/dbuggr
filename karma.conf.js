@@ -28,8 +28,7 @@ module.exports = function(config) {
     ],
 
     proxies: {
-      '/node_modules/chai/chai.js': '/base/node_modules/chai/chai.js',
-      '/node_modules/mocha/mocha.js': '/base/node_modules/mocha/mocha.js',
+      '/node_modules/': '/base/node_modules/',
       '/lib/': '/base/lib/',
       '/src/': '/base/src/',
       '/vendor/': '/base/vendor/',
@@ -40,8 +39,7 @@ module.exports = function(config) {
 
 
     // list of files to exclude
-    // TODO: call github api from travis ci
-    exclude: process.env.TRAVIS ? ['test/github-api-test.js'] : [],
+    exclude:  [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
