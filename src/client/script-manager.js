@@ -1,5 +1,7 @@
 'use strict';
 
+import jQuery from 'https://code.jquery.com/jquery-2.1.4.js';
+
 loadScriptsFromDOM();
 
 function functionFromString(funcOrString) {
