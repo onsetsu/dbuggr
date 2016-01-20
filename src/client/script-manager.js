@@ -1,10 +1,10 @@
-'use strict';
-
 import jQuery from 'https://code.jquery.com/jquery-2.1.4.js';
 
 loadScriptsFromDOM();
 
 function functionFromString(funcOrString) {
+    'use strict';
+
     if (typeof funcOrString === 'function') {
         return funcOrString;
     }
@@ -93,7 +93,7 @@ export function updateScript(object, funcOrString, opts={}) {
     }
 
     removeScript(object, name);
-    addScript(object, funcOrString, opts)
+    addScript(object, funcOrString, opts);
 }
 
 export function addScript(object, funcOrString, opts={}) {
@@ -137,8 +137,8 @@ export function removeScript(object, name) {
         return;
     }
 
-    if (typeof object.__scripts__ === 'undefined'
-        || typeof object.__scripts__[name] === 'undefined') {
+    if (typeof object.__scripts__ === 'undefined' ||
+        typeof object.__scripts__[name] === 'undefined') {
         throw 'script name "' + name + '" does not exist!';
     }
 
@@ -160,5 +160,5 @@ export function callScript(object, name) {
     if (typeof object.__scripts__ !== 'undefined' && typeof object.__scripts__[name] !== 'undefined') {
         return object[name].apply(object, optionalArgs);
     }
-    throw 'unknown script "' + name +'"!'
+    throw 'unknown script "' + name +'"!';
 }

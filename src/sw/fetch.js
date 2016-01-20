@@ -16,7 +16,7 @@
     l4.urlMatch = function(regex) {
         return function(request) {
             return request.url.match(regex);
-        }
+        };
     };
 
     var fetchTasks = [];

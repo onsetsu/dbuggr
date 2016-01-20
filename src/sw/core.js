@@ -6,5 +6,5 @@ l4.through = function through(callback) {
     return function(x) {
         callback(x);
         return x;
-    }
+    };
 };
