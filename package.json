@@ -1,6 +1,6 @@
 {
   "name": "dbuggr",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Abstraction-aware Debugging Tools for JavaScript",
   "keywords": [
     "debug",
