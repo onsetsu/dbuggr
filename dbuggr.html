@@ -10,8 +10,23 @@
     <!-- external libraries -->
     <script src="vendor/jquery.js"></script>
     <script src="vendor/bluebird.js"></script>
+    <script src="src/external/system.src.js"></script>
 
-    <script src="lib/serverproxy.js"></script>
+    <script>
+        System.config({
+            transpiler: 'babel',
+            babelOptions: {stage: 0, optional: ['es7.doExpressions']},
+            map: {
+                babel: 'src/external/babel-browser.js'
+            }
+        });
+
+        System.import('lib/serverproxy.js').then(function(serverProxy) {
+            return Server.glob2('lib', '*.js')
+        }).then(function(stuff) {
+            console.log(stuff);
+        });
+    </script>
 </head>
 <body>
 
