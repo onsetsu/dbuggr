@@ -9,7 +9,7 @@ var karmaServer = require('karma').server;
 var karma = require('gulp-karma');
 
 gulp.task('lint', function () {
-  return gulp.src('lib/!(external)**/*.js')
+  return gulp.src('src/!(external)**/*.js')
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));

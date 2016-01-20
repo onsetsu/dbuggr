@@ -40,7 +40,14 @@
     "mocha": "^2.2.5",
     "requirejs": "^2.1.20",
     "sinon-chai": "^2.8.0",
-    "systemjs": "^0.18.10"
+    "systemjs": "^0.18.10",
+    "gulp": "^3.8.0",
+    "gulp-jshint": "^1.6.1",
+    "jshint-stylish": "^0.2.0",
+    "gulp-shell": "^0.4.2",
+    "jsdoc": "^3.3.2",
+    "gulp-git": "^1.2.4",
+    "gulp-karma": "^0.0.4"
   },
   "engines": {
     "node": ">= 0.12.4",
