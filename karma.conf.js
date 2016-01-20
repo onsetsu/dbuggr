@@ -17,7 +17,9 @@ module.exports = function(config) {
       'src/external/babel-browser.js',
       {pattern: 'node_modules/chai/chai.js', included: false},
       {pattern: 'node_modules/mocha/mocha.js', included: false},
+      {pattern: 'lib/**/*.js', included: false},
       {pattern: 'src/**/*.js', included: false},
+      {pattern: 'vendor/**/*.js', included: false},
       {pattern: 'serviceworker*', included: false},
       {pattern: 'test/**/*.js', included: false},
       {pattern: 'test-main.js', included: false},
@@ -28,7 +30,9 @@ module.exports = function(config) {
     proxies: {
       '/node_modules/chai/chai.js': '/base/node_modules/chai/chai.js',
       '/node_modules/mocha/mocha.js': '/base/node_modules/mocha/mocha.js',
+      '/lib/': '/base/lib/',
       '/src/': '/base/src/',
+      '/vendor/': '/base/vendor/',
       '/test/': '/base/test/',
       '/serviceworker-loader.js': '/base/serviceworker-loader.js',
       '/serviceworker.js': '/base/serviceworker.js'
