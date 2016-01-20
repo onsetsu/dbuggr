@@ -22,9 +22,10 @@
     "url": "https://github.com/onsetsu/dbuggr.git"
   },
   "dependencies": {
+    "d3": "^3.5.12",
+    "lively.context": "^0.1.5"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "engines": {
     "node": ">= 0.12.4",
     "npm": "~2.10.1"
