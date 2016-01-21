@@ -196,7 +196,10 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 children = []
                 try:
                     for x in os.listdir(path):
-                        children.append(path_to_dict(os.path.join(path,x)))
+                        child = path_to_dict(os.path.join(path,x))
+                        print child["fullpath"], fnmatch.fnmatch(child["fullpath"], pattern)
+                        if(child['type'] == "directory" or fnmatch.fnmatch(child["name"], pattern)):
+                            children.append(child)
                 except WindowsError as e:
                     pass
                 d['children'] = children
