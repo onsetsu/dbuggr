@@ -12,6 +12,7 @@ ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
 });
 
 // Sunburst with changable sizes http://bl.ocks.org/mbostock/4063423
+// Tween lines on changes
 // TODO: Zoomable Sunburst http://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
 
 var width = 960,
@@ -23,14 +24,14 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 var partition = d3.layout.partition()
     .sort(null)
     .size([2 * Math.PI, 1])
     .value(function(d) { return 1; });
 
-var innerRadius = 0.5;
+var innerRadius = 0.65;
 var pieInverter = d3.scale.linear()
     .domain([0, 1])
     .range([1, innerRadius]);
@@ -109,16 +110,23 @@ d3.json("example/flare.json", function(error, root) {
             .transition()
             .duration(1500)
             .attrTween("d", arcTween);
+
+        link
+            .data(bundle(links))
+            .transition()
+            .duration(1500)
+            .attrTween("d", lineTween);
     });
 
-    // TODO: remove least common ancestor itself from list of Points
     var link = svg.append("g").selectAll(".link")
         .data(bundle(links))
         .enter().append("path")
         // only for interactions?
+        // TODO: remove least common ancestor itself from list of Points
         .each(function(d) { console.log(d); d.source = d[0], d.target = d[d.length - 1]; })
         .attr("class", "link")
-        .attr("d", line);
+        .attr("d", line)
+        .each(stashForLine);
 
 });
 
@@ -126,6 +134,10 @@ d3.json("example/flare.json", function(error, root) {
 function stash(d) {
     d.x0 = d.x;
     d.dx0 = d.dx;
+}
+
+function stashForLine(d) {
+
 }
 
 // Interpolate the arcs in data space.
@@ -136,6 +148,21 @@ function arcTween(a) {
         a.x0 = b.x;
         a.dx0 = b.dx;
         return arc(b);
+    };
+}
+
+function lineTween(a) {
+    var length = a.length,
+        interpolations = a.map(point => d3.interpolate({x: point.x0, dx: point.dx0}, point));
+
+    return function(t) {
+        var interpolatedPoints = interpolations.map(i => i(t));
+        interpolatedPoints.forEach((b, index) => {
+            a[index].x0 = b.x;
+            a[index].dx0 = b.dx;
+        });
+
+        return line(interpolatedPoints);
     };
 }
 
@@ -150,7 +177,7 @@ function getRandomLinks(root) {
         return randomLeaf(root.children[index]);
     }
 
-    for(var i = 0; i < 100; i++) {
+    for(var i = 0; i < 10; i++) {
         var source = randomLeaf(root),
             target = randomLeaf(root);
 
