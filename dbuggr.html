@@ -21,11 +21,7 @@
             }
         });
 
-        System.import('lib/serverproxy.js').then(function(serverProxy) {
-            return serverProxy.default.glob2('lib', '*.js')
-        }).then(function(stuff) {
-            console.log(stuff);
-        });
+        System.import('dbuggr.js');
     </script>
 </head>
 <body>
