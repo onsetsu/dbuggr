@@ -7,6 +7,7 @@ import os
 import os.path
 import urlparse
 import fnmatch
+import json
 
 # Various config settings for the python server
 SETTINGS = {
@@ -186,6 +187,25 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def glob2(self):
         basedir = self.query_params['basedir'][0]
         pattern = self.query_params['pattern'][0]
+
+        def path_to_dict(path):
+            d = {'name': os.path.basename(path), 'fullpath': path}
+            if os.path.isdir(path):
+                d['type'] = "directory"
+                os.listdir(path)
+                children = []
+                try:
+                    for x in os.listdir(path):
+                        children.append(path_to_dict(os.path.join(path,x)))
+                except WindowsError as e:
+                    pass
+                d['children'] = children
+            else:
+                d['type'] = "file"
+            return d
+
+        return self.send_json(path_to_dict(basedir))
+
 
         matches = []
         for root, dirnames, filenames in os.walk(basedir):
