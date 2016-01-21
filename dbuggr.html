@@ -12,21 +12,25 @@
     <script src="vendor/bluebird.js"></script>
     <script src="src/external/system.src.js"></script>
 
-    <script>
-        System.config({
-            transpiler: 'babel',
-            babelOptions: {stage: 0, optional: ['es7.doExpressions']},
-            map: {
-                babel: 'src/external/babel-browser.js'
-            }
-        });
-
-        System.import('dbuggr.js');
-    </script>
 </head>
 <body>
+<form>
+    <label><input type="radio" name="mode" value="size"> Size</label>
+    <label><input type="radio" name="mode" value="count" checked> Count</label>
+</form>
 
 <dt>Entity Finder:</dt><dd><input type="text" class="text" id="entityFinder"/></dd>
 
+<script>
+    System.config({
+        transpiler: 'babel',
+        babelOptions: {stage: 0, optional: ['es7.doExpressions']},
+        map: {
+            babel: 'src/external/babel-browser.js'
+        }
+    });
+
+    System.import('dbuggr.js');
+</script>
 </body>
 </html>
