@@ -27,29 +27,54 @@ var svg = d3.select("body").append("svg")
 
 var partition = d3.layout.partition()
     .sort(null)
-    .size([2 * Math.PI, 1 /*radius * radius*/])
+    .size([2 * Math.PI, 1])
     .value(function(d) { return 1; });
 
-var maxDepth = 6;
+var innerRadius = 0.5;
 var pieInverter = d3.scale.linear()
     .domain([0, 1])
-    .range([1, 0.3]);
+    .range([1, innerRadius]);
+var converterForInnerLayout = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, innerRadius]);
 
 var arc = d3.svg.arc()
     .startAngle(d => d.x)
     .endAngle(d => d.x + d.dx)
     .innerRadius(function(d) {
         return radius * (d.children ?
-                pieInverter(d.y + d.dy) :
-                    0.3
-            );
+            pieInverter(d.y + d.dy) :
+           innerRadius
+        );
     })
     .outerRadius(function(d) {
         return pieInverter(d.y) * radius;
     });
 
+var bundle = d3.layout.bundle();
+
+var radToDeg = d3.scale.linear()
+    .domain([0, 360])
+    .range([0, 2 * Math.PI]);
+
+var line = d3.svg.line.radial()
+    .interpolate("bundle")
+    .tension(.85)
+    .radius(function(d) {
+        return radius * (d.children ?
+        converterForInnerLayout(d.y + d.dy) :
+           innerRadius
+        );
+    })
+    .angle(function(d) {
+        return d.x + d.dx / 2;
+    });
+
 d3.json("example/flare.json", function(error, root) {
     if (error) throw error;
+
+    var links = getRandomLinks(root);
+    console.log('links', links);
 
     var enterElem = svg.datum(root).selectAll("path")
         .data(partition.nodes)
@@ -60,8 +85,11 @@ d3.json("example/flare.json", function(error, root) {
         .style("stroke", "#fff")
         .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
         .style("fill-rule", "evenodd")
-        .each(stash);
+        .each(stash)
+        .on('click', (d => console.log(d.name, d)));
 
+    /*
+    // TODO: file and folder names
     enterElem.append("text")
         .attr("x", function(d) { return d.x; })
         .attr("y", function(d) { return d.y; })
@@ -69,6 +97,7 @@ d3.json("example/flare.json", function(error, root) {
         .attr("text-anchor", function(d) { return "end"; })
         .text(d => d.name)
         .style("fill-opacity", 1);
+    */
 
     d3.selectAll("input").on("change", function change() {
         var value = this.value === "count"
@@ -81,6 +110,16 @@ d3.json("example/flare.json", function(error, root) {
             .duration(1500)
             .attrTween("d", arcTween);
     });
+
+    // TODO: remove least common ancestor itself from list of Points
+    var link = svg.append("g").selectAll(".link")
+        .data(bundle(links))
+        .enter().append("path")
+        // only for interactions?
+        .each(function(d) { console.log(d); d.source = d[0], d.target = d[d.length - 1]; })
+        .attr("class", "link")
+        .attr("d", line);
+
 });
 
 // Stash the old values for transition.
@@ -88,7 +127,6 @@ function stash(d) {
     d.x0 = d.x;
     d.dx0 = d.dx;
 }
-
 
 // Interpolate the arcs in data space.
 function arcTween(a) {
@@ -102,3 +140,27 @@ function arcTween(a) {
 }
 
 d3.select(self.frameElement).style("height", height + "px");
+
+function getRandomLinks(root) {
+    var links = [];
+    function randomLeaf(root) {
+        if(!root.children) { return root; }
+
+        var index = parseInt((Math.random() * root.children.length), 10);
+        return randomLeaf(root.children[index]);
+    }
+
+    for(var i = 0; i < 100; i++) {
+        var source = randomLeaf(root),
+            target = randomLeaf(root);
+
+        if(source !== target) {
+            links.push({
+                source: source,
+                target: target
+            });
+        }
+    }
+
+    return links;
+}
