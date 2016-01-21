@@ -197,7 +197,6 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 try:
                     for x in os.listdir(path):
                         child = path_to_dict(os.path.join(path,x))
-                        print child["fullpath"], fnmatch.fnmatch(child["fullpath"], pattern)
                         if(child['type'] == "directory" or fnmatch.fnmatch(child["name"], pattern)):
                             children.append(child)
                 except WindowsError as e:
@@ -209,18 +208,16 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         return self.send_json(path_to_dict(basedir))
 
-
-        matches = []
-        for root, dirnames, filenames in os.walk(basedir):
-            dirs = []
-            files = []
-            for dirname in dirnames:
-                dirs.append(dirname)
-            for filename in fnmatch.filter(filenames, pattern):
-                files.append(filename)
-            matches.append({'root': root, 'dirs': dirs, 'files': files})
-
-        return self.send_json(matches)
+        #matches = []
+        #for root, dirnames, filenames in os.walk(basedir):
+        #    dirs = []
+        #    files = []
+        #    for dirname in dirnames:
+        #        dirs.append(dirname)
+        #    for filename in fnmatch.filter(filenames, pattern):
+        #        files.append(filename)
+        #    matches.append({'root': root, 'dirs': dirs, 'files': files})
+        #return self.send_json(matches)
 
     def guess_type(self, path):
         type, _ = mimetypes.guess_type(path)
