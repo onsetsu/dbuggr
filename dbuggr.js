@@ -78,9 +78,14 @@ var arc = d3.svg.arc()
     .innerRadius(getArcInnerRadius)
     .outerRadius(getArcOuterRadius);
 
+function lowerHalf(d) {
+    var middleAngle = d.x + d.dx / 2;
+    return Math.PI / 2 < middleAngle && middleAngle < Math.PI * 1.5;
+}
 var hiddenArc = d3.svg.arc()
-    .startAngle(d => d.x)
-    .endAngle(d => d.x + d.dx)
+    // check for lowerHalf to switch direction of paths
+    .startAngle(d => lowerHalf(d) ? d.x + d.dx : d.x)
+    .endAngle(d => lowerHalf(d) ? d.x : d.x + d.dx)
     .innerRadius(getArcMiddleRadius)
     .outerRadius(getArcMiddleRadius);
 
