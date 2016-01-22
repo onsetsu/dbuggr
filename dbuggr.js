@@ -125,7 +125,6 @@ d3.json("example/flare.json", function(error, root) {
         .on("mouseout", mouseouted);
     var node = path;
 
-    // TODO: Add to defs
     var hiddenPath = defs.datum(root).selectAll("path")
         .data(partition.nodes)
         .enter().append("path")
@@ -134,14 +133,7 @@ d3.json("example/flare.json", function(error, root) {
         .attr("d", hiddenArc);
 
     enterElem.append("text")
-        //.attr("x", function(d) { return d.x; })
-        //.attr("y", function(d) { return d.y; })
-        //.attr("dy", "11.35em")
-        //.attr("text-anchor", function(d) { return "end"; })
-        //.text(d => d.name)
         .style("fill-opacity", 1)
-        //.attr("x", 5)   //Move the text from the start angle of the arc
-        //.attr("dy", 18) //Move the text down
         .append("textPath")
         .attr("startOffset","25%")
         .style("text-anchor","middle")
