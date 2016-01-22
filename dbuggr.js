@@ -33,7 +33,8 @@ var width = 960,
 var realSVG = d3.select("body").append("svg");
 
 // gradient as reference for hierarchical edge bundles
-var gradient = realSVG.append('defs').append('linearGradient')
+var defs = realSVG.append('defs');
+var gradient = defs.append('linearGradient')
     .attr("id", 'bundleview-gradient');
 gradient.append('stop').attr('stop-color', '#2ca02c');
 gradient.append('stop')
@@ -125,12 +126,12 @@ d3.json("example/flare.json", function(error, root) {
     var node = path;
 
     // TODO: Add to defs
-    var hiddenPath = enterElem.append("path")
+    var hiddenPath = defs.datum(root).selectAll("path")
+        .data(partition.nodes)
+        .enter().append("path")
         .each(stash)
         .attr('id', (d, i) => 'bundleview_node_' + i)
-        .attr("d", hiddenArc)
-        //.style("fill", "none")
-        .style('stroke', '#f0f');
+        .attr("d", hiddenArc);
 
     enterElem.append("text")
         //.attr("x", function(d) { return d.x; })
