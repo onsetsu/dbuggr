@@ -11,42 +11,25 @@ ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
     console.log(files);
 });
 
+// FEATURES:
 // Sunburst with changeable sizes http://bl.ocks.org/mbostock/4063423
 // Tween lines on changes
+// On hover: Highlight hierarchy and dependencies
+// path gradients
+// TODO: Folder and file names
+// TODO: hook with your own data
+// TODO: Split external modules like node_modules, vendor, http requests away and limit their influence
+//   via transform?
 // TODO: Zoomable Sunburst http://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
 // TODO: Tooltips
 // TODO: Changeable Metrics for Pie Sizes
-// TODO: Split external modules like node_modules, vendor, http requests away and limit their influence
-//   via transform?
-// TODO: hook with your own data
-// TODO: Folder and file names
-// On hover: Highlight hierarchy and dependencies
-// path gradients
 // TODO: Reloadable
 
 var width = 960,
     height = 700,
     radius = Math.min(width, height) / 2,
     color = d3.scale.category20c();
-/*
-<defs>
 
-<linearGradient id='grad'>
-    <stop stop-color='black'/>
-    <stop offset='100%' stop-color='magenta'/>
-    </linearGradient>
-
-    <marker id="start-mark" viewBox="-1 -1 2 2"  markerWidth="1.2" markerHeight="1.2" orient='auto'>
-    <circle r='1'/>
-    </marker>
-
-    <marker id="end-mark" viewBox="-1 -1 2 2"  markerWidth="2.5" markerHeight="2.5" orient='auto'>
-    <!-->  <polygon points='0,1 1,0 0,-1'/> <!-- -->
-    <-->  <path class='marker-path' d='M0,1 L1,0 L0,-1 Z'/>  <!-- -->
-    </marker>
-
-    </defs>
-*/
 var realSVG = d3.select("body").append("svg");
 
 // gradient as reference for hierarchical edge bundles
@@ -76,18 +59,29 @@ var converterForInnerLayout = d3.scale.linear()
     .domain([0, 1])
     .range([0, innerRadius]);
 
+function getArcInnerRadius(d) {
+    return radius * (d.children ?
+                pieInverter(d.y + d.dy) :
+                innerRadius
+        );
+}
+function getArcOuterRadius(d) {
+    return pieInverter(d.y) * radius;
+}
+function getArcMiddleRadius(d) {
+    return (getArcInnerRadius(d) + getArcOuterRadius(d)) / 2;
+}
 var arc = d3.svg.arc()
     .startAngle(d => d.x)
     .endAngle(d => d.x + d.dx)
-    .innerRadius(function(d) {
-        return radius * (d.children ?
-            pieInverter(d.y + d.dy) :
-           innerRadius
-        );
-    })
-    .outerRadius(function(d) {
-        return pieInverter(d.y) * radius;
-    });
+    .innerRadius(getArcInnerRadius)
+    .outerRadius(getArcOuterRadius);
+
+var hiddenArc = d3.svg.arc()
+    .startAngle(d => d.x)
+    .endAngle(d => d.x + d.dx)
+    .innerRadius(getArcMiddleRadius)
+    .outerRadius(getArcMiddleRadius);
 
 var bundle = d3.layout.bundle();
 
@@ -127,18 +121,59 @@ d3.json("example/flare.json", function(error, root) {
         .classed('node--leaf', d => !d.children)
         .on('click', (d => console.log(d.name, d)))
         .on("mouseover", mouseovered)
-        .on("mouseout", mouseouted);
-    var node = path;
+        .on("mouseout", mouseouted)
 
-    /*
+        .each((d, i) => {
+            //d3.select(this).attr("d");
+
+            //Create a new invisible arc that the text can flow along
+            svg.append("path")
+                //.attr("class", "hiddenDonutArcs")
+                .attr('id', 'bundleview_node_' + i)
+                .attr("d", hiddenArc(d))
+                //.style("fill", "none")
+                .style('stroke', '#f0f');
+        });
+    var node = path;
+/*
+    var hiddenPath = enterElem.append("path")
+        .attr("display", function(d) { return null; return d.depth ? null : "none"; }) // hide inner ring
+        .attr("d", arc)
+        //.style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+        .style("fill-rule", "evenodd")
+        .each(stash)
+        .classed('node', true)
+        .classed('node--leaf', d => !d.children)
+        .on('click', (d => console.log(d.name, d)))
+        .on("mouseover", mouseovered)
+        .on("mouseout", mouseouted)
+
+        .each((d, i) => {
+            //d3.select(this).attr("d");
+
+            //Create a new invisible arc that the text can flow along
+            svg.append("path")
+                //.attr("class", "hiddenDonutArcs")
+                .attr('id', 'bundleview_node_' + i)
+                .attr("d", hiddenArc(d))
+                //.style("fill", "none")
+                .style('stroke', '#f0f');
+        });*/
+
     enterElem.append("text")
-        .attr("x", function(d) { return d.x; })
-        .attr("y", function(d) { return d.y; })
-        .attr("dy", "11.35em")
-        .attr("text-anchor", function(d) { return "end"; })
-        .text(d => d.name)
-        .style("fill-opacity", 1);
-    */
+        //.attr("x", function(d) { return d.x; })
+        //.attr("y", function(d) { return d.y; })
+        //.attr("dy", "11.35em")
+        //.attr("text-anchor", function(d) { return "end"; })
+        //.text(d => d.name)
+        .style("fill-opacity", 1)
+        //.attr("x", 5)   //Move the text from the start angle of the arc
+        //.attr("dy", 18) //Move the text down
+        .append("textPath")
+        .attr("startOffset","25%")
+        .style("text-anchor","middle")
+        .attr("xlink:href",function(d,i){return "#bundleview_node_"+i;})
+        .text(d => d.name);
 
     d3.selectAll("input").on("change", function change() {
         var value = this.value === "count"
