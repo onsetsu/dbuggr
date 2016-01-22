@@ -121,44 +121,16 @@ d3.json("example/flare.json", function(error, root) {
         .classed('node--leaf', d => !d.children)
         .on('click', (d => console.log(d.name, d)))
         .on("mouseover", mouseovered)
-        .on("mouseout", mouseouted)
-
-        .each((d, i) => {
-            //d3.select(this).attr("d");
-
-            //Create a new invisible arc that the text can flow along
-            svg.append("path")
-                //.attr("class", "hiddenDonutArcs")
-                .attr('id', 'bundleview_node_' + i)
-                .attr("d", hiddenArc(d))
-                //.style("fill", "none")
-                .style('stroke', '#f0f');
-        });
+        .on("mouseout", mouseouted);
     var node = path;
-/*
+
+    // TODO: Add to defs
     var hiddenPath = enterElem.append("path")
-        .attr("display", function(d) { return null; return d.depth ? null : "none"; }) // hide inner ring
-        .attr("d", arc)
-        //.style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-        .style("fill-rule", "evenodd")
         .each(stash)
-        .classed('node', true)
-        .classed('node--leaf', d => !d.children)
-        .on('click', (d => console.log(d.name, d)))
-        .on("mouseover", mouseovered)
-        .on("mouseout", mouseouted)
-
-        .each((d, i) => {
-            //d3.select(this).attr("d");
-
-            //Create a new invisible arc that the text can flow along
-            svg.append("path")
-                //.attr("class", "hiddenDonutArcs")
-                .attr('id', 'bundleview_node_' + i)
-                .attr("d", hiddenArc(d))
-                //.style("fill", "none")
-                .style('stroke', '#f0f');
-        });*/
+        .attr('id', (d, i) => 'bundleview_node_' + i)
+        .attr("d", hiddenArc)
+        //.style("fill", "none")
+        .style('stroke', '#f0f');
 
     enterElem.append("text")
         //.attr("x", function(d) { return d.x; })
@@ -172,6 +144,7 @@ d3.json("example/flare.json", function(error, root) {
         .append("textPath")
         .attr("startOffset","25%")
         .style("text-anchor","middle")
+        .style('alignment-baseline', 'central')
         .attr("xlink:href",function(d,i){return "#bundleview_node_"+i;})
         .text(d => d.name);
 
@@ -180,11 +153,18 @@ d3.json("example/flare.json", function(error, root) {
             ? function() { return 1; }
             : function(d) { return d.size; };
 
+        var foo = partition.value(value).nodes;
         path
-            .data(partition.value(value).nodes)
+            .data(foo)
             .transition()
             .duration(1500)
             .attrTween("d", arcTween);
+
+        hiddenPath
+            .data(foo)
+            .transition()
+            .duration(1500)
+            .attrTween("d", hiddenArcTween);
 
         link
             .data(bundle(links))
@@ -271,15 +251,17 @@ function stash(d) {
 
 
 // Interpolate the arcs in data space.
-function arcTween(a) {
+function getCommonArcTween(a, arcConstructor) {
     var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
     return function(t) {
         var b = i(t);
         a.x0 = b.x;
         a.dx0 = b.dx;
-        return arc(b);
+        return arcConstructor(b);
     };
 }
+function arcTween(a) { return getCommonArcTween(a, arc); }
+function hiddenArcTween(a) { return getCommonArcTween(a, hiddenArc); }
 
 // depends on that the .stash method was called for each point
 function lineTween(a) {
