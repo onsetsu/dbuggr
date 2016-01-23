@@ -14,7 +14,10 @@ ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
 // On hover: Highlight hierarchy and dependencies
 // path gradients
 // Folder and file names
+//   TODO: - ellipsing on long words
 // TODO: hook with your own data
+//   - load file tree
+//   TODO: - construct dependencies
 // TODO: Split external modules like node_modules, vendor, http requests away and limit their influence
 //   via transform?
 // TODO: Zoomable Sunburst http://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
@@ -57,6 +60,10 @@ var converterForInnerLayout = d3.scale.linear()
     .domain([0, 1])
     .range([0, innerRadius]);
 
+var x = d3.scale.linear()
+    .domain([0, 2 * Math.PI])
+    .range([0, 2 * Math.PI]);
+
 function getArcInnerRadius(d) {
     return radius * (d.children ?
                 pieInverter(d.y + d.dy) :
@@ -69,11 +76,17 @@ function getArcOuterRadius(d) {
 function getArcMiddleRadius(d) {
     return (getArcInnerRadius(d) + getArcOuterRadius(d)) / 2;
 }
+function clampAtCircle(x) {
+    return Math.max(0, Math.min(2 * Math.PI - 0.00001, x));
+}
+var outerMargin = 10;
 var arc = d3.svg.arc()
-    .startAngle(d => d.x)
-    .endAngle(d => d.x + d.dx)
-    .innerRadius(getArcInnerRadius)
-    .outerRadius(getArcOuterRadius);
+    .startAngle(d => clampAtCircle((x(d.x))))
+    //.startAngle(d => d.x)
+    .endAngle(d => clampAtCircle((x(d.x + d.dx))))
+    //.endAngle(d => d.x + d.dx)
+    .innerRadius(d => Math.min(radius+outerMargin, getArcInnerRadius(d)))
+    .outerRadius(d => Math.min(radius+outerMargin, getArcOuterRadius(d)));
 
 function lowerHalf(d) {
     var middleAngle = d.x + d.dx / 2;
@@ -81,8 +94,8 @@ function lowerHalf(d) {
 }
 var hiddenArc = d3.svg.arc()
     // check for lowerHalf to switch direction of paths
-    .startAngle(d => lowerHalf(d) ? d.x + d.dx : d.x)
-    .endAngle(d => lowerHalf(d) ? d.x : d.x + d.dx)
+    .startAngle(d => clampAtCircle(x(/*lowerHalf(d) ? d.x + d.dx :*/ d.x)))
+    .endAngle(d => clampAtCircle(x(/*lowerHalf(d) ? d.x :*/ d.x + d.dx)))
     .innerRadius(getArcMiddleRadius)
     .outerRadius(getArcMiddleRadius);
 
@@ -105,7 +118,12 @@ var line = d3.svg.line.radial()
         return d.x + d.dx / 2;
     });
 
+// Keep track of the node that is currently being displayed as the root.
+var nodeDisplayedAsRoot;
+
 function initBundleview(root, links) {
+    nodeDisplayedAsRoot = root;
+
     var enterElem = svg.datum(root).selectAll("path")
         .data(partition.nodes)
         .enter();
@@ -117,10 +135,40 @@ function initBundleview(root, links) {
         .each(stash)
         .classed('node', true)
         .classed('node--leaf', d => !d.children)
-        .on('click', (d => console.log(d.name, d)))
-        .on("mouseover", mouseovered)
+        .on('mouseover', (d => {
+            console.log(d.name, d);
+            mouseovered(d);
+        }))
+        .on('click', (d => {
+            clickedOnNode(d);
+        }))
+        //.on("mouseover", mouseovered)
         .on("mouseout", mouseouted);
     var node = path;
+
+    function clickedOnNode(d) {
+        nodeDisplayedAsRoot = d;
+
+        path
+            .transition()
+            .duration(1000)
+            .attrTween("d", arcTweenZoom(d));
+
+        hiddenPath
+            .transition()
+            .duration(1000)
+            .attrTween("d", hiddenArcTweenZoom(d));
+
+        labels
+            .classed('label--invisible', d => { return false; });
+/*
+        link
+            .data(bundle(links))
+            .transition()
+            .duration(1500)
+            .attrTween("d", lineTween);
+*/
+    }
 
     var hiddenPath = defs.datum(root).selectAll("path")
         .data(partition.nodes)
@@ -129,7 +177,7 @@ function initBundleview(root, links) {
         .attr('id', (d, i) => 'bundleview_node_' + i)
         .attr("d", hiddenArc);
 
-    enterElem.append("text")
+    var labels = enterElem.append("text")
         .style("fill-opacity", 1)
         .append("textPath")
         .attr("startOffset","25%")
@@ -142,7 +190,16 @@ function initBundleview(root, links) {
         var value = this.value === "count"
             ? function() { return 1; }
             : function(d) { return d.size; };
+/*        var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+            yd = d3.interpolate(pieInverter.domain(), [d.y, 1]);
 
+        return function(d, i) {
+            return i
+                ? function(t) { return arcConstructor(d); }
+                : function foo(t) {
+                x.domain(xd(t));
+                pieInverter.domain(yd(t));
+*/
         var foo = partition.value(value).nodes;
         path
             .data(foo)
@@ -313,9 +370,9 @@ if(false) {
         initBundleview(root, getRandomLinks(root, 200));
     });
 } else {
-    ServerProxy.glob2('.', '*.js').then(function(stuff) {
+    ServerProxy.glob2('src', '*.js').then(function(stuff) {
         var numberOfFiles = 0;
-        console.log(stuff)
+        console.log(stuff);
 
         walkTree(stuff, noop, node => {
             if(node.children) {
@@ -332,7 +389,6 @@ if(false) {
                     }
                     i++;
                 }
-                console.log(node);
             }
 
             // attach metrics
@@ -348,3 +404,22 @@ if(false) {
         initBundleview(stuff, getRandomLinks(stuff, 200));
     });
 }
+
+// When zooming: interpolate the scales.
+function commonArcTweenZoom(d, arcConstructor) {
+    var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+        yd = d3.interpolate(pieInverter.domain(), [d.y, 1]);
+
+    return function(d, i) {
+        return i
+            ? function(t) { return arcConstructor(d); }
+            : function foo(t) {
+                x.domain(xd(t));
+                pieInverter.domain(yd(t));
+                return arcConstructor(d);
+            };
+    };
+}
+
+function arcTweenZoom(d) { return commonArcTweenZoom(d, arc); }
+function hiddenArcTweenZoom(d) { return commonArcTweenZoom(d, hiddenArc); }
