@@ -2,10 +2,7 @@
 
 import ServerProxy from './lib/serverproxy.js';
 import * as d3 from 'node_modules/d3/d3.js';
-
-ServerProxy.glob2('src', '*.js').then(function(stuff) {
-    console.log(stuff);
-});
+import { noop } from './lib/utils.js';
 
 ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
     console.log(files);
@@ -16,7 +13,7 @@ ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
 // Tween lines on changes
 // On hover: Highlight hierarchy and dependencies
 // path gradients
-// TODO: Folder and file names
+// Folder and file names
 // TODO: hook with your own data
 // TODO: Split external modules like node_modules, vendor, http requests away and limit their influence
 //   via transform?
@@ -108,12 +105,7 @@ var line = d3.svg.line.radial()
         return d.x + d.dx / 2;
     });
 
-d3.json("example/flare.json", function(error, root) {
-    if (error) throw error;
-
-    // TODO: extract links correctly
-    var links = getRandomLinks(root, 200);
-
+function initBundleview(root, links) {
     var enterElem = svg.datum(root).selectAll("path")
         .data(partition.nodes)
         .enter();
@@ -239,7 +231,7 @@ d3.json("example/flare.json", function(error, root) {
             .classed("node--target", false)
             .classed("node--source", false);
     }
-});
+}
 
 // Stash the old values for transition.
 function stash(d) {
@@ -301,4 +293,56 @@ function getRandomLinks(root, numberOfLinks) {
     }
 
     return links;
+}
+
+function walkTree(root, beforeChildren, afterChildren) {
+    beforeChildren(root);
+    if(root.children) {
+        root.children.forEach((child, i) => {
+            walkTree(child, beforeChildren, afterChildren);
+        })
+    }
+    afterChildren(root);
+}
+
+// init it all
+if(false) {
+    d3.json("example/flare.json", function(error, root) {
+        if (error) throw error;
+
+        initBundleview(root, getRandomLinks(root, 200));
+    });
+} else {
+    ServerProxy.glob2('.', '*.js').then(function(stuff) {
+        var numberOfFiles = 0;
+        walkTree(stuff, noop, node => {
+            if(node.children) {
+                for(let i = 0; i < node.children.length;) {
+                    let child = node.children[i];
+                    if(child.name === 'node_modules') {
+                        node.children.splice(i, 1);
+                        continue;
+                    }
+                    // get rid of empty folders
+                    if(child.children && child.children.length === 0) {
+                        node.children.splice(i, 1);
+                        continue;
+                    }
+                    i++;
+                }
+                console.log(node);
+            }
+
+            // attach metrics
+            if(!node.children) {
+                node.size = node.fullpath.length;
+            }
+
+            numberOfFiles++;
+        });
+        console.log(numberOfFiles, stuff);
+
+        // TODO: extract links correctly
+        initBundleview(stuff, getRandomLinks(stuff, 200));
+    });
 }
