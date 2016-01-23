@@ -110,12 +110,12 @@ var line = d3.svg.line.radial()
     .tension(.85)
     .radius(function(d) {
         return radius * (d.children ?
-        converterForInnerLayout(d.y + d.dy) :
+        Math.max(0, Math.min(innerRadius, converterForInnerLayout(d.y + d.dy))) :
            innerRadius
         );
     })
     .angle(function(d) {
-        return d.x + d.dx / 2;
+        return clampAtCircle(x(d.x + d.dx / 2));
     });
 
 // Keep track of the node that is currently being displayed as the root.
@@ -139,10 +139,7 @@ function initBundleview(root, links) {
             console.log(d.name, d);
             mouseovered(d);
         }))
-        .on('click', (d => {
-            clickedOnNode(d);
-        }))
-        //.on("mouseover", mouseovered)
+        .on('click', clickedOnNode)
         .on("mouseout", mouseouted);
     var node = path;
 
@@ -152,22 +149,22 @@ function initBundleview(root, links) {
         path
             .transition()
             .duration(1000)
-            .attrTween("d", arcTweenZoom(d));
+            .attrTween("d", arcTweenZoom(nodeDisplayedAsRoot));
 
         hiddenPath
             .transition()
             .duration(1000)
-            .attrTween("d", hiddenArcTweenZoom(d));
+            .attrTween("d", hiddenArcTweenZoom(nodeDisplayedAsRoot));
 
         labels
             .classed('label--invisible', d => { return false; });
-/*
+
         link
             .data(bundle(links))
             .transition()
             .duration(1500)
-            .attrTween("d", lineTween);
-*/
+            .attrTween("d", lineTweenZoom(nodeDisplayedAsRoot));
+
     }
 
     var hiddenPath = defs.datum(root).selectAll("path")
@@ -190,16 +187,7 @@ function initBundleview(root, links) {
         var value = this.value === "count"
             ? function() { return 1; }
             : function(d) { return d.size; };
-/*        var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-            yd = d3.interpolate(pieInverter.domain(), [d.y, 1]);
 
-        return function(d, i) {
-            return i
-                ? function(t) { return arcConstructor(d); }
-                : function foo(t) {
-                x.domain(xd(t));
-                pieInverter.domain(yd(t));
-*/
         var foo = partition.value(value).nodes;
         path
             .data(foo)
@@ -296,19 +284,30 @@ function stash(d) {
     d.dx0 = d.dx;
 }
 
-
 // Interpolate the arcs in data space.
-function getCommonArcTween(a, arcConstructor) {
-    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-    return function(t) {
-        var b = i(t);
+function getCommonArcTween(a, i, arcConstructor) {
+    var oi = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+    function tween(t) {
+        var b = oi(t);
         a.x0 = b.x;
         a.dx0 = b.dx;
         return arcConstructor(b);
-    };
+    }
+    if (i === 0) {
+        // If we are on the first arc, adjust the x domain to match the root node
+        // at the current zoom level. (We only need to do this once.)
+        var xd = d3.interpolate(x.domain(), [nodeDisplayedAsRoot.x, nodeDisplayedAsRoot.x + nodeDisplayedAsRoot.dx]);
+        return function(t) {
+            x.domain(xd(t));
+            return tween(t);
+        };
+    } else {
+        return tween;
+    }
 }
-function arcTween(a) { return getCommonArcTween(a, arc); }
-function hiddenArcTween(a) { return getCommonArcTween(a, hiddenArc); }
+
+function arcTween(d, i) { return getCommonArcTween(d, i, arc); }
+function hiddenArcTween(d, i) { return getCommonArcTween(d, i, hiddenArc); }
 
 // depends on that the .stash method was called for each point
 function lineTween(a) {
@@ -324,6 +323,36 @@ function lineTween(a) {
 
         return line(interpolatedPoints);
     };
+}
+
+// depends on that the .stash method was called for each point
+function lineTweenZoom(rootDisplay) {
+    return function(a, i) {
+        var length = a.length,
+            interpolations = a.map(point => d3.interpolate({x: point.x0, dx: point.dx0}, point));
+
+        function tween(t) {
+            var interpolatedPoints = interpolations.map(i => i(t));
+            interpolatedPoints.forEach((b, index) => {
+                a[index].x0 = b.x;
+                a[index].dx0 = b.dx;
+            });
+
+            return line(interpolatedPoints);
+        }
+
+        if (i === 0) {
+            var xd = d3.interpolate(x.domain(), [rootDisplay.x, rootDisplay.x + rootDisplay.dx]),
+                yd = d3.interpolate(converterForInnerLayout.domain(), [rootDisplay.y, 1]);
+            return function(t) {
+                x.domain(xd(t));
+                converterForInnerLayout.domain(yd(t));
+                return tween(t);
+            };
+        } else {
+            return tween;
+        }
+    }
 }
 
 d3.select(self.frameElement).style("height", height + "px");
@@ -406,9 +435,9 @@ if(false) {
 }
 
 // When zooming: interpolate the scales.
-function commonArcTweenZoom(d, arcConstructor) {
-    var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-        yd = d3.interpolate(pieInverter.domain(), [d.y, 1]);
+function commonArcTweenZoom(displayedRoot, arcConstructor) {
+    var xd = d3.interpolate(x.domain(), [displayedRoot.x, displayedRoot.x + displayedRoot.dx]),
+        yd = d3.interpolate(pieInverter.domain(), [displayedRoot.y, 1]);
 
     return function(d, i) {
         return i

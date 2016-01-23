@@ -187,6 +187,7 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def glob2(self):
         basedir = self.query_params['basedir'][0]
         pattern = self.query_params['pattern'][0]
+        print basedir, pattern
         node_modules_pattern = "*node_modules*node_modules*"
 
         def path_to_dict(path):
