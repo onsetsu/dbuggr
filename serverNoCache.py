@@ -185,27 +185,27 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return self.send_json(files)
 
     def glob2(self):
-        basedir = "." #self.query_params['basedir'][0]
-        pattern = "*.js" #self.query_params['pattern'][0]
+        basedir = self.query_params['basedir'][0]
+        pattern = self.query_params['pattern'][0]
+        node_modules_pattern = "*node_modules*node_modules*"
 
         def path_to_dict(path):
             d = {'name': os.path.basename(path), 'fullpath': path}
             if os.path.isdir(path):
                 d['type'] = "directory"
-                os.listdir(path)
+                # do not include nested node_nodules
+                if(fnmatch.fnmatch(d["fullpath"], node_modules_pattern)):
+                    return d, False
                 children = []
-                try:
-                    for x in os.listdir(path):
-                        child, validNode = path_to_dict(os.path.join(path,x))
-                        if(validNode and (child['type'] == "directory" or fnmatch.fnmatch(child["name"], pattern))):
-                            children.append(child)
-                except WindowsError as e:
-                    pass
+                for x in os.listdir(path):
+                    child, validNode = path_to_dict(os.path.join(path,x))
+                    if(validNode):
+                        children.append(child)
                 d['children'] = children
                 return d, len(children) > 0
             else:
                 d['type'] = "file"
-                return d, True
+                return d, fnmatch.fnmatch(d["name"], pattern)
 
         root, _ = path_to_dict(basedir)
         return self.send_json(root)
