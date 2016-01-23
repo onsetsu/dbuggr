@@ -315,14 +315,16 @@ if(false) {
 } else {
     ServerProxy.glob2('.', '*.js').then(function(stuff) {
         var numberOfFiles = 0;
+        console.log(stuff)
+
         walkTree(stuff, noop, node => {
             if(node.children) {
                 for(let i = 0; i < node.children.length;) {
                     let child = node.children[i];
-                    if(child.name === 'node_modules') {
+                    /*if(child.name === 'node_modules') {
                         node.children.splice(i, 1);
                         continue;
-                    }
+                    }*/
                     // get rid of empty folders
                     if(child.children && child.children.length === 0) {
                         node.children.splice(i, 1);
