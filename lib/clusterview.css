@@ -67,3 +67,10 @@
     leaf:  #6666af;
     small: #ca4444;
 }
+
+.bundle--text {
+    width: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

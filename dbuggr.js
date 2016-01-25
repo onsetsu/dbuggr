@@ -1,29 +1,49 @@
 "use strict";
 
 import ServerProxy from './lib/serverproxy.js';
-import * as d3 from 'node_modules/d3/d3.js';
+//import * as d3 from 'node_modules/d3/d3.js';
 import { noop } from './lib/utils.js';
+//import * as ctx from './context.js';
+
+d3.select("body").append("svg").append("circle")
+    .attr("cx", 30)
+    .attr("cy", 30)
+    .attr("r", 20)
+    .on('contextmenu', function(d,i) {
+        // create the div element that will hold the context menu
+        d3.selectAll('.context-menu').data([1])
+            .enter()
+            .append('div')
+            .attr('class', 'context-menu');
+        // close menu
+        d3.select('body').on('click.context-menu', function() {
+            d3.select('.context-menu').style('display', 'none');
+        });
+        // this gets executed when a contextmenu event occurs
+        d3.selectAll('.context-menu')
+            .html('')
+            .append('ul')
+            .selectAll('li')
+            .data(['apple', 'grapefruit']).enter()
+            .append('li')
+
+            .on('click' , function(d) { console.log(d); return d; })
+
+
+            .text(function(d) { return d; });
+        d3.select('.context-menu').style('display', 'none');
+        // show the context menu
+        d3.select('.context-menu')
+            .style('left', (d3.event.pageX - 2) + 'px')
+            .style('top', (d3.event.pageY - 2) + 'px')
+            .style('display', 'block');
+        d3.event.preventDefault();
+    });
+
 
 ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
     console.log(files);
 });
-
-// FEATURES:
-// Sunburst with changeable sizes http://bl.ocks.org/mbostock/4063423
-// Tween lines on changes
-// On hover: Highlight hierarchy and dependencies
-// path gradients
-// Folder and file names
-//   TODO: - ellipsing on long words
-// TODO: hook with your own data
-//   - load file tree
-//   TODO: - construct dependencies
-// TODO: Split external modules like node_modules, vendor, http requests away and limit their influence
-//   via transform?
-// TODO: Zoomable Sunburst http://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
-// TODO: Tooltips
-// TODO: Changeable Metrics for Pie Sizes
-// TODO: Reloadable
 
 var width = 960,
     height = 700,
@@ -160,7 +180,6 @@ function initBundleview(root, links) {
             .classed('label--invisible', d => { return false; });
 
         link
-            .data(bundle(links))
             .transition()
             .duration(1500)
             .attrTween("d", lineTweenZoom(nodeDisplayedAsRoot));
@@ -175,6 +194,7 @@ function initBundleview(root, links) {
         .attr("d", hiddenArc);
 
     var labels = enterElem.append("text")
+        .classed('bundle--text', true)
         .style("fill-opacity", 1)
         .append("textPath")
         .attr("startOffset","25%")
@@ -188,21 +208,20 @@ function initBundleview(root, links) {
             ? function() { return 1; }
             : function(d) { return d.size; };
 
-        var foo = partition.value(value).nodes;
+        var newlyLayoutedData = partition.value(value).nodes;
         path
-            .data(foo)
+            .data(newlyLayoutedData)
             .transition()
             .duration(1500)
             .attrTween("d", arcTween);
 
         hiddenPath
-            .data(foo)
+            .data(newlyLayoutedData)
             .transition()
             .duration(1500)
             .attrTween("d", hiddenArcTween);
 
         link
-            .data(bundle(links))
             .transition()
             .duration(1500)
             .attrTween("d", lineTween);
@@ -392,11 +411,11 @@ function walkTree(root, beforeChildren, afterChildren) {
 }
 
 // init it all
-if(false) {
+if(true) {
     d3.json("example/flare.json", function(error, root) {
         if (error) throw error;
 
-        initBundleview(root, getRandomLinks(root, 200));
+        initBundleview(root, getRandomLinks(root, 300));
     });
 } else {
     ServerProxy.glob2('src', '*.js').then(function(stuff) {
@@ -407,10 +426,6 @@ if(false) {
             if(node.children) {
                 for(let i = 0; i < node.children.length;) {
                     let child = node.children[i];
-                    /*if(child.name === 'node_modules') {
-                        node.children.splice(i, 1);
-                        continue;
-                    }*/
                     // get rid of empty folders
                     if(child.children && child.children.length === 0) {
                         node.children.splice(i, 1);

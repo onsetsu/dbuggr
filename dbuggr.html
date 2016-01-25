@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="lib/clusterview.css"/>
 
     <!-- external libraries -->
+    <script src="node_modules/d3/d3.js"></script>
     <script src="vendor/jquery.js"></script>
     <script src="vendor/bluebird.js"></script>
     <script src="src/external/system.src.js"></script>
@@ -23,6 +24,7 @@
 <dt>Entity Finder:</dt><dd><input type="text" class="text" id="entityFinder"/></dd>
 
 <script>
+
     System.config({
         transpiler: 'babel',
         babelOptions: {stage: 0, optional: ['es7.doExpressions']},
@@ -31,7 +33,9 @@
         }
     });
 
-    System.import('dbuggr.js');
+    //System.import('dbuggr.js').then(x => {
+System.import('context.js');
+    //});
     //System.import('lib/clusterview.js');
 </script>
 </body>
