@@ -141,6 +141,8 @@ var line = d3.svg.line.radial()
 // Keep track of the node that is currently being displayed as the root.
 var nodeDisplayedAsRoot;
 
+function isLeaf(d) { return !d.children; }
+
 function initBundleview(root, links) {
     nodeDisplayedAsRoot = root;
 
@@ -154,7 +156,7 @@ function initBundleview(root, links) {
         .style("fill-rule", "evenodd")
         .each(stash)
         .classed('node', true)
-        .classed('node--leaf', d => !d.children)
+        .classed('node--leaf', isLeaf)
         .on('mouseover', (d => {
             console.log(d.name, d);
             mouseovered(d);
@@ -164,6 +166,10 @@ function initBundleview(root, links) {
     var node = path;
 
     function clickedOnNode(d) {
+        if(isLeaf(d)) {
+
+            return;
+        }
         nodeDisplayedAsRoot = d;
 
         path
