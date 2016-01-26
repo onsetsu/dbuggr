@@ -1,6 +1,6 @@
 {
   "name": "dbuggr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Abstraction-aware Debugging Tools for JavaScript",
   "keywords": [
     "debug",
@@ -31,6 +31,13 @@
   "devDependencies": {
     "browserify": "^11.0.0",
     "chai": "^1.9.1",
+    "gulp": "^3.9.0",
+    "gulp-git": "^1.2.4",
+    "gulp-jshint": "^1.6.1",
+    "gulp-karma": "^0.0.4",
+    "gulp-shell": "^0.4.2",
+    "jsdoc": "^3.3.2",
+    "jshint-stylish": "^0.2.0",
     "karma": "^0.13.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^0.1.10",
@@ -40,14 +47,7 @@
     "mocha": "^2.2.5",
     "requirejs": "^2.1.20",
     "sinon-chai": "^2.8.0",
-    "systemjs": "^0.18.10",
-    "gulp": "^3.8.0",
-    "gulp-jshint": "^1.6.1",
-    "jshint-stylish": "^0.2.0",
-    "gulp-shell": "^0.4.2",
-    "jsdoc": "^3.3.2",
-    "gulp-git": "^1.2.4",
-    "gulp-karma": "^0.0.4"
+    "systemjs": "^0.18.10"
   },
   "engines": {
     "node": ">= 0.12.4",

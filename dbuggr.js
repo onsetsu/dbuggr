@@ -45,8 +45,8 @@ ServerProxy.browse('./vendor', ServerProxy.types.scripts).then(files => {
     console.log(files);
 });
 
-var width = 960,
-    height = 700,
+var width = 700,
+    height = 600,
     radius = Math.min(width, height) / 2,
     color = d3.scale.category20c();
 
