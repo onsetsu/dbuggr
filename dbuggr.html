@@ -16,16 +16,40 @@
     <script src="src/external/system.src.js"></script>
 
 </head>
+<link rel="stylesheet" type="text/css" media="screen" href="index.css">
+<style>
+
+/*    .node circle {
+        fill: #fff;
+        stroke: steelblue;
+        stroke-width: 3px;
+    }
+
+    .node text { font: 12px sans-serif; }
+
+    .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2px;
+    }*/
+
+</style>
+<script src="./node_modules/ace-editor-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/d3/d3.js" type="text/javascript" charset="utf-8"></script>
+<!-- TODO: include esTraverse correctly or replace by lively.ast functionality-->
+<script src="./vendor/est.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/lively.ast/lively.ast.dev-bundle.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/lively.context/lib/rewriter.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/lively.context/lib/exception.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/lively.context/lib/interpreter.js" type="text/javascript" charset="utf-8"></script>
+<script src="./node_modules/lively.context/lib/stackReification.js" type="text/javascript" charset="utf-8"></script>
 <body>
 <form>
     <label><input type="radio" name="mode" value="size"> Size</label>
     <label><input type="radio" name="mode" value="count" checked> Count</label>
 </form>
 
-<dt>Entity Finder:</dt><dd><input type="text" class="text" id="entityFinder"/></dd>
-
 <script>
-
     System.config({
         transpiler: 'babel',
         babelOptions: {stage: 0, optional: ['es7.doExpressions']},
@@ -34,7 +58,28 @@
         }
     });
 
-    System.import('lib/file-browser/bundleview.js');
+    System.import('dbuggr.js');
 </script>
+<div class="content">
+    <h1><span class="lively">lively</span>.context</h1>
+    Omniscient debugger for JavaScript:<br><br>
+    Example snippets:<br>
+    <button onclick="setExampleCode(sampleCode.sumLoop);">Sum Loop</button>
+    <button onclick="setExampleCode(sampleCode.sumReduce);">Sum Reduce</button>
+    <button onclick="setExampleCode(sampleCode.fibonacci);">Fibonacci</button>
+    <button onclick="setExampleCode(sampleCode.square);">Square</button><br>
+    <div id="vars-debugger" class="varBox">
+        <div class="capturedVars">Captured Variables (on exeception)</div>
+        <hr>
+        <dl class="varList">
+            <dd>not run yet</dd>
+        </dl>
+    </div>
+    <pre id="editor-debugger">// CODE\n</pre>
+    <div id="exception-debugger" class="exception" style="display: none;">This.is.the.error.message</div>
+    <button class="run" onclick="run();">Run!</button>
+    <button onclick="reset();">Reset</button><br>
+</div>
+<script src="debugger.js" type="text/javascript" charset="utf-8"></script>
 </body>
 </html>
