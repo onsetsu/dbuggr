@@ -71,44 +71,7 @@
         <div class="grid-stack-item-content"></div>
     </div>
 </div>
-<script type="text/javascript">
-    $(function () {
-        var options = {
-            cell_height: 80,
-            resizable: {
-                handles: 'sw, se'
-            },
-            animate: true
-        };
-        $('.grid-stack').gridstack(options);
 
-        var items = [
-            {x: 0, y: 0, width: 2, height: 2},
-            {x: 3, y: 1, width: 1, height: 2},
-            {x: 4, y: 1, width: 1, height: 1},
-            {x: 2, y: 3, width: 3, height: 1},
-            {x: 2, y: 5, width: 1, height: 1}
-        ];
-
-        var grid = $('.grid-stack').data('gridstack');
-        items.forEach(function (node) {
-            grid.add_widget($('<div><div class="grid-stack-item-content" /><div/>'),
-                    node.x, node.y, node.width, node.height);
-        }, this);
-    });
-</script>
-
-<script>
-    System.config({
-        transpiler: 'babel',
-        babelOptions: {stage: 0, optional: ['es7.doExpressions']},
-        map: {
-            babel: 'src/external/babel-browser.js'
-        }
-    });
-
-    System.import('dbuggr.js');
-</script>
 <div class="content">
     <h1><span class="lively">lively</span>.context</h1>
     Omniscient debugger for JavaScript:<br><br>
@@ -128,8 +91,19 @@
     <button class="run" onclick="run();">Run!</button>
     <button onclick="reset();">Reset</button><br>
 </div>
-<script src="debugger.js" type="text/javascript" charset="utf-8"></script>
 
+<script>
+    System.config({
+        transpiler: 'babel',
+        babelOptions: {stage: 0, optional: ['es7.doExpressions']},
+        map: {
+            babel: 'src/external/babel-browser.js'
+        }
+    });
+
+    System.import('lib/layout.js')
+            .then(() => System.import('dbuggr.js'));
+</script>
 
 </body>
 </html>
