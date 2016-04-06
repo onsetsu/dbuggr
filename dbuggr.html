@@ -38,6 +38,9 @@
 <script src="./node_modules/gridstack/bower_components/jquery-ui/jquery-ui.js" type="text/javascript" charset="utf-8"></script>
 <script src="./node_modules/gridstack/bower_components/lodash/lodash.js" type="text/javascript" charset="utf-8"></script>
 <script src="./node_modules/gridstack/dist/gridstack.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="templates/test-polymer-template.html">
 <body>
 
 <h1>Omniscient debugger for JavaScript based on <span class="lively">lively</span>.context</h1>
@@ -54,8 +57,6 @@
     System.import('dbuggr.js');
 </script>
 
-<link rel="import" href="templates/dbuggr-button.html">
-<link rel="import" href="templates/dbuggr-contextmenu.html">
-<dbuggr-button> Now!</dbuggr-button>
+<test-polymer-template>Oooh, Polymer!</test-polymer-template>
 </body>
 </html>
