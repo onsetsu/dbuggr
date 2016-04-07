@@ -52,12 +52,8 @@
     stroke-width: 2px;
 }
 
-.link--source {
-    stroke: #d62728;
-}
-
-.link--target {
-    stroke: #2ca02c;
+.link--none {
+    stroke: #d4d4d4;
 }
 
 .colors {
