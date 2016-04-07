@@ -20,13 +20,6 @@
     fill: steelblue;
 }
 
-.link {
-    fill: none;
-    stroke:url(#bundleview-gradient);
-    stroke-opacity: .4;
-    pointer-events: none;
-}
-
 .node:hover,
 .node--source,
 .node--target {
@@ -46,6 +39,13 @@
     fill: #d62728;
 }
 
+.link {
+    fill: none;
+    stroke:url(#bundleview-gradient);
+    stroke-opacity: .4;
+    pointer-events: none;
+}
+
 .link--source,
 .link--target {
     stroke-opacity: .7;
@@ -54,6 +54,7 @@
 
 .link--none {
     stroke: #d4d4d4;
+    stroke-opacity: .3;
 }
 
 .colors {
