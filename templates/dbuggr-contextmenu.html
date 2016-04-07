@@ -1,139 +1,64 @@
 <!-- http://jsfiddle.net/1mo3vmja/2/ -->
-<template id="dbuggr-contextmenu">
-    <style>
-        .container {
-            position: absolute;
-            display: none;
-            background-color: #f2f2f2;
-            border-radius: 4px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            min-width: 150px;
-            width: 200px;
-            height: 20px;
-            border: 1px solid #d4d4d4;
-            z-index:1200;
-        }
+<link rel="import"
+      href="../bower_components/polymer/polymer.html">
+<link rel="import"
+      href="../bower_components/iron-input/iron-input.html">
 
-        .container ul {
-            list-style-type: none;
-            margin: 4px 0px;
-            padding: 0px;
-            cursor: default;
-        }
-
-        .container ul li {
-            padding: 4px 16px;
-        }
-
-        .container ul li:hover {
-            background-color: #4677f8;
-            color: #fefefe;
-        }
-    </style>
-    <div class="container">
-        <content></content>
-    </div>
-</template>
-
-<script>
-    (function() {
-        console.log(template);
-        class ContextMenu extends HTMLElement {
-            createdCallback() {
-                console.log('instance of the element is created2');
-            }
-        }
-
-        //var template = document.currentScript.ownerDocument.querySelector('#dbuggr-button');
-        //var clone = document.importNode(template.content, true);
-
-        //System.import('../src/client/morphic/component-loader.js').then(loader => { loader.register('lively-menu', clone); });
-
-        var template = document.currentScript.ownerDocument.querySelector('#dbuggr-contextmenu');
-        // LivelyKeyValueInput.baseURI = document.currentScript.baseURI;
-        //var clone = document.importNode(template.content, true);
-        var prototype = Object.create(ContextMenu.prototype);
-
-        // clone.querySelector('style').innerHTML = '@import url("' + document.currentScript.baseURI.replace('lively-key-value-input.html', 'style/lively-key-value-input.css') + '");' + clone.querySelector('style').innerHTML;
-
-        register('dbuggr-contextmenu', null, prototype);
-
-        function register(componentName, _, prototype) {
-            prototype.createdCallback = function() {
-                var root = this.createShadowRoot();
-                // Adding a template
-                //var template = document.querySelector('#dbuggr-contextmenu');
-                var clone = document.importNode(template.content, true);
-                root.appendChild(clone);
-            };
-
-            var x = document.registerElement(componentName, {
-                prototype: prototype
-            });
-            document.body.appendChild(new x());
-            console.log(x);
-        }
-
-        //var ownerDocument = (document._currentScript || document.currentScript).ownerDocument;
-        //var template = ownerDocument.querySelector('#dbuggr-contextmenu');
-
-        //document.registerElement('dbuggr-contextmenu', {
-        //    prototype: Multiselect
-        //});
-/*
-return;
-        class LivelyKeyValueInput extends HTMLDivElement {
-            attachedCallback() {
-                let body = '<span class="lively-key-value-input-key"></span><input class="lively-key-value-input-value" value=""><span class="lively-key-value-input-status ok"></span>';
-                this.innerHTML = body;
-                this.keyElement = this.querySelector('.lively-key-value-input-key');
-                this.valueElement = this.querySelector('.lively-key-value-input-value');
-                this.statusElement = this.querySelector('.lively-key-value-input-status');
-
-                this.valueElement.addEventListener('keyup', (e) => { this.keyUpHandler(e); });
-                this.valueElement.addEventListener('input', (e) => { this.inputEventHandler(e); });
-                this.valueElement.addEventListener('change', (e) => { this.changeEventHandler(e); });
-                this.valueElement.addEventListener('focus', (e) => { this.gotFocus(e); });
-            }
-        }
-
-        (function() {
-            LivelyKeyValueInput.template = document.currentScript.ownerDocument.querySelector('#lively-key-value-input');
-            // LivelyKeyValueInput.baseURI = document.currentScript.baseURI;
-            var clone = document.importNode(LivelyKeyValueInput.template.content, true);
-            var prototype = Object.create(LivelyKeyValueInput.prototype);
-
-            // clone.querySelector('style').innerHTML = '@import url("' + document.currentScript.baseURI.replace('lively-key-value-input.html', 'style/lively-key-value-input.css') + '");' + clone.querySelector('style').innerHTML;
-
-            System.import('../src/client/morphic/component-loader.js')
-                    .then(loader => {
-                        loader.register('lively-key-value-input', clone, prototype);
-                    });
-        })();
-
-
-        function register(componentName, template, prototype) {
-            var proto = prototype || Object.create(Morph.prototype);
-
-            proto.createdCallback = function() {
-                var root = this.createShadowRoot();
-                // clone the template again, so when more elements are created,
-                // they get their own elements from the template
-                var clone = document.importNode(template, true);
-                root.appendChild(clone);
-
-                // load any unknown elements this component might introduce
-                loadUnresolved(this, true).then(() => {
-                    this.dispatchEvent(new Event("created"));
-                });
-
+<dom-module id="dbuggr-contextmenu">
+    <template>
+        <style>
+            :host {
+                position: absolute;
+                top: "200px";
+                left: "200px";
+                border: 20px;
+                z-index: 200;
             }
 
-            document.registerElement(componentName, {
-                prototype: proto
-            });
-        }
-*/
-    }());
-</script>
+            .container {
+                width: 120px;
+                background-color: white;
+                border: 0.7px solid gray;
+                margin: 0;
+                padding: 0;
+                cursor: default;
+                list-style-type: none;
+            }
+
+            .container /deep/ li {
+                font-size: 10pt;
+                padding: 10px 5px 5px 10px;
+                margin: 0;
+                list-style-type: none;
+                color:  #1a1a1a;
+            }
+
+            .container /deep/ li:hover {
+                background-color: #2B65EC;
+                color: white;
+            }
+        </style>
+
+        <ul class="container"><content></content></ul>
+    </template>
+
+    <script>
+        Polymer({
+            is: "dbuggr-contextmenu",
+            ready: function() {
+                // set this element's owner property
+                this.owner = "Foo";
+            },
+            properties: {
+                owner: {
+                    type: String,
+                    value: "Bar"
+                }
+            },
+            doStuff: function(foo) {
+                console.log('doStuff');
+            }
+        });
+    </script>
+
+</dom-module>
