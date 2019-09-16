@@ -78,11 +78,11 @@ module.exports = function(config) {
       Chrome_Travis_CI: {
         base: 'Chrome',
         flags: ['--no-sandbox']
-      },
-      ChromeCanary_Travis_CI: {
-        base: 'ChromeCanary',
-        flags: ['--no-sandbox']
-      },
+      }//,
+      //ChromeCanary_Travis_CI: {
+      //  base: 'ChromeCanary',
+      //  flags: ['--no-sandbox']
+      //},
     },
 
     // Continuous Integration mode
@@ -92,7 +92,7 @@ module.exports = function(config) {
     browserNoActivityTimeout: 20000
   });
 
-  if(process.env.TRAVIS) {
-    config.browsers = ['ChromeCanary_Travis_CI'];
-  }
+  //if(process.env.TRAVIS) {
+  //  config.browsers = ['ChromeCanary_Travis_CI'];
+  //}
 };
